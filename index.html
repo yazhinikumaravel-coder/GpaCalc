@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GradeCalc AI — Engineering GPA &amp; CGPA Calculator</title>
+<meta name="description" content="Calculate semester GPA, overall CGPA and percentage for Anna University, VTU, JNTU and more. Free, offline-capable engineering grade calculator.">
+
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===================== BACKGROUND GRID ===================== -->
+<div class="grid-backdrop" aria-hidden="true"></div>
+
+<!-- ===================== HEADER ===================== -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" width="34" height="34">
+          <rect x="4" y="4" width="40" height="40" rx="8" fill="none" stroke="currentColor" stroke-width="2.5"/>
+          <path d="M14 30 L21 16 L28 30 M17 25 H25" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="33" cy="18" r="2.6" fill="currentColor"/>
+        </svg>
+      </span>
+      <div class="brand-text">
+        <span class="brand-name">GradeCalc<em>AI</em></span>
+        <span class="brand-tag">engineering gpa &amp; cgpa ledger</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button id="themeToggle" class="icon-btn" type="button" aria-label="Toggle dark mode" title="Toggle light / dark mode">
+        <svg id="iconSun" viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="1.8"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="1.5" x2="12" y2="4.5"/><line x1="12" y1="19.5" x2="12" y2="22.5"/><line x1="1.5" y1="12" x2="4.5" y2="12"/><line x1="19.5" y1="12" x2="22.5" y2="12"/><line x1="4.4" y1="4.4" x2="6.5" y2="6.5"/><line x1="17.5" y1="17.5" x2="19.6" y2="19.6"/><line x1="4.4" y1="19.6" x2="6.5" y2="17.5"/><line x1="17.5" y1="6.5" x2="19.6" y2="4.4"/></g></svg>
+        <svg id="iconMoon" viewBox="0 0 24 24" width="20" height="20" style="display:none"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== UNIVERSITY / REGULATION STRIP ===================== -->
+<section class="uni-strip" aria-label="University and regulation setup">
+  <div class="uni-strip-inner card">
+    <div class="uni-field uni-field--detect">
+      <label for="uniSearchInput">College / University name</label>
+      <input type="text" id="uniSearchInput" placeholder="e.g. Anna University, RVCE Bangalore, JNTU Hyderabad…" autocomplete="off">
+      <p class="detect-hint" id="detectHint">Type your college name and I'll try to detect the right grading system.</p>
+    </div>
+
+    <div class="uni-field">
+      <label for="universitySelect">University</label>
+      <select id="universitySelect"></select>
+    </div>
+
+    <div class="uni-field">
+      <label for="regulationSelect">Regulation</label>
+      <select id="regulationSelect"></select>
+    </div>
+
+    <div class="uni-field">
+      <label for="semesterSelect">Semester</label>
+      <select id="semesterSelect"></select>
+    </div>
+
+    <div class="uni-badge" id="detectBadge" hidden>
+      <span class="stamp-dot" aria-hidden="true"></span>
+      <span id="detectBadgeText"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TAB NAV ===================== -->
+<nav class="tabnav" aria-label="Calculator sections">
+  <div class="tabnav-inner">
+    <button class="tab-btn active" data-tab="gpa" type="button"><span class="tab-index">01</span>Semester GPA</button>
+    <button class="tab-btn" data-tab="cgpa" type="button"><span class="tab-index">02</span>Overall CGPA</button>
+    <button class="tab-btn" data-tab="ai" type="button"><span class="tab-index">03</span>AI Assistant</button>
+    <button class="tab-btn" data-tab="results" type="button"><span class="tab-index">04</span>Results</button>
+  </div>
+</nav>
+
+<main class="page">
+
+  <!-- ===================== GPA PANEL ===================== -->
+  <section class="tab-panel active" id="panel-gpa">
+    <div class="panel-head">
+      <h1>Semester GPA</h1>
+      <p>Add every subject for this semester, enter marks or a letter grade, and let the ledger do the arithmetic.</p>
+    </div>
+
+    <div class="card table-card">
+      <div class="table-toolbar">
+        <div class="input-mode-toggle" role="group" aria-label="Grade entry mode">
+          <button type="button" class="mode-btn active" data-mode="marks">Enter Marks</button>
+          <button type="button" class="mode-btn" data-mode="grade">Enter Grade</button>
+        </div>
+        <button type="button" id="addSubjectBtn" class="btn btn-outline">+ Add Subject</button>
+      </div>
+
+      <div class="table-scroll">
+        <table class="ledger-table" id="subjectsTable">
+          <thead>
+            <tr>
+              <th class="col-idx">#</th>
+              <th class="col-name">Subject Name</th>
+              <th class="col-credits">Credits</th>
+              <th class="col-input">Marks / Grade</th>
+              <th class="col-gp">Grade Point</th>
+              <th class="col-remove"></th>
+            </tr>
+          </thead>
+          <tbody id="subjectsBody"><!-- rows injected by JS --></tbody>
+        </table>
+      </div>
+
+      <div class="gpa-summary">
+        <div class="summary-item">
+          <span class="summary-label">Total Credits</span>
+          <span class="summary-value" id="gpaTotalCredits">0</span>
+        </div>
+        <div class="summary-item summary-item--stamp">
+          <span class="summary-label">Semester GPA</span>
+          <span class="summary-value summary-value--big" id="gpaResultValue">—</span>
+        </div>
+      </div>
+
+      <div class="table-actions">
+        <button type="button" id="calcGpaBtn" class="btn btn-primary">Calculate GPA</button>
+        <button type="button" id="saveSemesterBtn" class="btn btn-ghost">Save to CGPA List</button>
+        <button type="button" id="sendToResultsBtn" class="btn btn-ghost">Send to Results</button>
+      </div>
+      <p class="grade-scale-note" id="gradeScaleNote"></p>
+    </div>
+  </section>
+
+  <!-- ===================== CGPA PANEL ===================== -->
+  <section class="tab-panel" id="panel-cgpa">
+    <div class="panel-head">
+      <h1>Overall CGPA</h1>
+      <p>Enter the GPA earned each semester (or pull them in automatically from the GPA tab) to get your cumulative CGPA and percentage.</p>
+    </div>
+
+    <div class="card table-card">
+      <div class="table-toolbar">
+        <span class="toolbar-hint">Semesters are numbered — order matters for your transcript.</span>
+        <button type="button" id="addSemesterRowBtn" class="btn btn-outline">+ Add Semester</button>
+      </div>
+
+      <div class="table-scroll">
+        <table class="ledger-table" id="cgpaTable">
+          <thead>
+            <tr>
+              <th class="col-idx">Sem</th>
+              <th class="col-name">GPA</th>
+              <th class="col-credits">Credits Earned</th>
+              <th class="col-remove"></th>
+            </tr>
+          </thead>
+          <tbody id="cgpaBody"><!-- rows injected by JS --></tbody>
+        </table>
+      </div>
+
+      <div class="gpa-summary gpa-summary--triple">
+        <div class="summary-item">
+          <span class="summary-label">Semesters</span>
+          <span class="summary-value" id="cgpaSemCount">0</span>
+        </div>
+        <div class="summary-item summary-item--stamp">
+          <span class="summary-label">CGPA</span>
+          <span class="summary-value summary-value--big" id="cgpaResultValue">—</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Percentage</span>
+          <span class="summary-value" id="cgpaPercentValue">—</span>
+        </div>
+      </div>
+
+      <div class="table-actions">
+        <button type="button" id="calcCgpaBtn" class="btn btn-primary">Calculate CGPA</button>
+        <button type="button" id="sendCgpaToResultsBtn" class="btn btn-ghost">Send to Results</button>
+      </div>
+      <p class="grade-scale-note" id="percentFormulaNote"></p>
+    </div>
+  </section>
+
+  <!-- ===================== AI ASSISTANT PANEL ===================== -->
+  <section class="tab-panel" id="panel-ai">
+    <div class="panel-head">
+      <h1>AI Assistant</h1>
+      <p>Ask about your university's grading system, how GPA/CGPA is worked out, or general academic questions.</p>
+    </div>
+
+    <div class="card chat-card">
+      <div class="chat-window" id="chatWindow" aria-live="polite"></div>
+
+      <div class="chat-chips" id="chatChips">
+        <button type="button" class="chip" data-q="What is GPA?">What is GPA?</button>
+        <button type="button" class="chip" data-q="What is CGPA?">What is CGPA?</button>
+        <button type="button" class="chip" data-q="How is percentage calculated?">Percentage formula?</button>
+        <button type="button" class="chip" data-q="Detect my university">Detect my university</button>
+        <button type="button" class="chip" data-q="What grading scale does my university use?">Grading scale?</button>
+      </div>
+
+      <form class="chat-input-row" id="chatForm">
+        <input type="text" id="chatInput" placeholder="Ask me anything about GPA, CGPA or your university…" autocomplete="off">
+        <button type="submit" class="btn btn-primary">Send</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===================== RESULTS PANEL ===================== -->
+  <section class="tab-panel" id="panel-results">
+    <div class="panel-head">
+      <h1>Results</h1>
+      <p>Your consolidated report card — download it as a PDF or image, or share it.</p>
+    </div>
+
+    <div class="card result-card" id="resultCardCapture">
+      <div class="result-card-head">
+        <div>
+          <span class="result-eyebrow" id="resultUniLine">University — Regulation</span>
+          <h2>GradeCalc AI — Report</h2>
+        </div>
+        <div class="stamp" id="resultStamp" aria-hidden="true">
+          <span id="resultStampText">GPA</span>
+        </div>
+      </div>
+
+      <div class="table-scroll">
+        <table class="ledger-table" id="resultSubjectsTable">
+          <thead>
+            <tr>
+              <th class="col-idx">#</th>
+              <th class="col-name">Subject Name</th>
+              <th class="col-credits">Credits</th>
+              <th class="col-input">Marks / Grade</th>
+              <th class="col-gp">Grade Point</th>
+            </tr>
+          </thead>
+          <tbody id="resultSubjectsBody">
+            <tr><td colspan="5" class="empty-row">Nothing sent to Results yet. Calculate a GPA or CGPA, then use "Send to Results".</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="result-metrics">
+        <div class="metric"><span>Total Credits</span><strong id="resTotalCredits">—</strong></div>
+        <div class="metric"><span>GPA</span><strong id="resGpa">—</strong></div>
+        <div class="metric"><span>CGPA</span><strong id="resCgpa">—</strong></div>
+        <div class="metric"><span>Percentage</span><strong id="resPercent">—</strong></div>
+      </div>
+    </div>
+
+    <div class="result-actions">
+      <button type="button" id="downloadPdfBtn" class="btn btn-primary">Download PDF</button>
+      <button type="button" id="downloadImageBtn" class="btn btn-outline">Download Image</button>
+      <button type="button" id="shareResultBtn" class="btn btn-outline">Share</button>
+      <button type="button" id="clearResultsBtn" class="btn btn-ghost">Clear</button>
+    </div>
+
+    <div class="history-block" id="historyBlock">
+      <h3>Saved history</h3>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <p>GradeCalc AI is an independent study tool. Grading formulas are approximations of common regulations — always confirm official results with your university.</p>
+  <p class="footer-assets-note">Optional: place a custom favicon at <code>assets/favicon.svg</code> and an og-image at <code>assets/og-image.png</code>. The app runs perfectly without them.</p>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+<script src="script.js" defer></script>
+</body>
+</html>
